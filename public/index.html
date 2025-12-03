@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Panel de Control - Clima</title>
+
+        <link rel="stylesheet" href="styles.css">
+
+        <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    </head>
+</html>
+
+<body>
+    <h1>Carga de datos climatológicos</h1>
+
+    <div class="dashboard-container">
+    <div class="card">
+        <h3>Carga de archivos (Excel / CSV)</h3>
+        <label>Archivo:</label>
+        <div class="file-input-container">
+        <input type="file" id="archivoInput" accept=".xlsx, .xls, .csv, .txt" onchange="mostrarBotonEliminar()">
+        <button id="botonEliminarArchivo" onclick="eliminarArchivo()" title="Eliminar Archivo">X</button>
+        </div>
+
+        <button onclick="procesarArchivo()">Subir y procesar archivo</button>
+        
+        <div id="estado">Esperando...</div>
+        <h3>Plantilla para los datos:</h3>
+        <button onclick="descargarPlantilla()" style="background-color: #28a745;">
+            Descargar plantilla
+        </button>
+    </div>
+
+    <div class="card">
+        <h3>Carga manual</h3>
+
+        <div class="row">
+            <div class="col form-group">
+                <label>Fecha (Date):</label>
+                <input type="date" id="m_date">
+            </div>
+            <div class="col form-group">
+                <label>Hora (Time):</label>
+                <input type="time" id="m_time">
+            </div>   
+        </div>
+
+         <div class="row">
+            <div class="col form-group">
+                <label>Temperatura (Temp Out) (°C):</label>
+                <input type="number" step="0.1" id="m_temp_out">
+            </div>
+            <div class="col form-group">
+                <label>Temperatura más alta (Hi Temp) (°C):</label>
+                <input type="number" step="0.1" id="m_hi_temp">
+            </div>   
+        </div>
+
+        <div class="row">
+            <div class="col form-group">
+                <label>Temperatura más baja (Low Temp) (°C):</label>
+                <input type="number" step="0.1" id="m_low_temp">
+            </div>
+            <div class="col form-group">
+                <label>Humedad relativa (Out Hum):</label>
+                <input type="number" id="m_out_hum">
+            </div>   
+        </div>
+
+        <div class="row">
+            <div class="col form-group">
+                <label>Indice de humedad de Lang (Dew Pt.):</label>
+                <input type="number" step="0.1" id="m_dew_pt">
+            </div>
+            <div class="col form-group">
+                <label>Velocidad del viento (Wind Speed):</label>
+                <input type="number" step="0.1" id="m_wind_speed">
+            </div>   
+        </div>
+
+        <div class="row">
+            <div class="col form-group">
+                <label>Dirección del viento (Wind Dir):</label>
+                <input type="text" id="m_wind_dir" placeholder="Ejemplo: SSE">
+            </div>
+            <div class="col form-group">
+                <label>Carrera de viento (Wind Run):</label>
+                <input type="number" step="0.1" id="m_wind_run">
+            </div>   
+        </div>
+
+        <div class="row">
+            <div class="col form-group">
+                <label>Hi Speed:</label>
+                <input type="number" step="0.1" id="m_hi_speed">
+            </div>
+            <div class="col form-group">
+                <label>Dirección de tiempo predominante (Hi Dir):</label>
+                <input type="text" id="m_hi_dir" placeholder="Ejemplo: SSE">
+            </div>   
+        </div>
+
+        <div class="row">
+            <div class="col form-group">
+                <label>Sensación térmica (Wind Chill):</label>
+                <input type="number" step="0.1" id="m_wind_chill">
+            </div>
+            <div class="col form-group">
+                <label>Índice de calor (Heat Index):</label>
+                <input type="number" step="0.1" id="m_heat_index">
+            </div>   
+        </div>
+
+        <div class="row">
+            <div class="col form-group">
+                <label>Indice de sensación termica aparente (THW Index):</label>
+                <input type="number" step="0.1" id="m_thw_index">
+            </div>
+            <div class="col form-group">
+                <label>Indice de sensación termica (THSW Index):</label>
+                <input type="number" step="0.1" id="m_thsw_index">
+            </div>   
+        </div>
+
+        <div class="row">
+            <div class="col form-group">
+                <label>Presión atmosférica (Bar):</label>
+                <input type="number" step="0.1" id="m_bar">
+            </div>
+            <div class="col form-group">
+                <label>Presión pluvial (Rain):</label>
+                <input type="number" step="0.1" id="m_rain">
+            </div>   
+        </div>
+
+        <div class="row">
+            <div class="col form-group">
+                <label>Intensidad de lluvia (Rain Rate):</label>
+                <input type="number" step="0.1" id="m_rain_rate">
+            </div>
+            <div class="col form-group">
+                <label>Radiación solar (Solar Rad.):</label>
+                <input type="number" id="m_solar_rad">
+            </div>   
+        </div>
+
+        <div class="row">
+            <div class="col form-group">
+                <label>Energía solar puntual (Solar Energy):</label>
+                <input type="number" step="0.1" id="m_solar_energy">
+            </div>
+            <div class="col form-group">
+                <label>Hi Solar Rad.:</label>
+                <input type="number" id="m_hi_solar_rad">
+            </div>   
+        </div>
+
+        <div class="row">
+            <div class="col form-group">
+                <label>Índice de radiación ultravioleta (UV Index):</label>
+                <input type="number" step="0.1" id="m_uv_index">
+            </div>
+            <div class="col form-group">
+                <label>UV Dose:</label>
+                <input type="number" id="m_uv_dose">
+            </div>   
+        </div>
+
+        <div class="row">
+            <div class="col form-group">
+                <label>HI UV:</label>
+                <input type="number" step="0.1" id="m_hi_uv">
+            </div>
+            <div class="col form-group">
+                <label>Temperatura interna (In Temp):</label>
+                <input type="number" step="0.1" id="m_in_temp">
+            </div>   
+        </div>
+
+        <div class="row">
+            <div class="col form-group">
+                <label>Humedad interna (In Hum):</label>
+                <input type="number" id="m_in_hum">
+            </div>
+            <div class="col form-group">
+                <label>Rocío interno (In Dew):</label>
+                <input type="number" step="0.1" id="m_in_dew">
+            </div>   
+        </div>
+
+        <div class="row">
+            <div class="col form-group">
+                <label>Calor interno (In Heat):</label>
+                <input type="number" step="0.1" id="m_in_heat">
+            </div>
+            <div class="col form-group">
+                <label>Contenido de humedad de equilibrio (In EMC):</label>
+                <input type="number" step="0.1" id="m_in_emc">
+            </div>   
+        </div>
+
+        <div class="row">
+            <div class="col form-group">
+                <label>Densidad de aire interno (In Air Density):</label>
+                <input type="number" step="0.1" id="m_in_air_density">
+            </div>
+            <div class="col form-group">
+                <label>Evotranspiración (ET):</label>
+                <input type="number" step="0.1" id="m_et">
+            </div>   
+        </div>
+
+        <div class="row">
+            <div class="col form-group">
+                <label>Wind samp:</label>
+                <input type="number" id="m_wind_samp">
+            </div>
+            <div class="col form-group">
+                <label>ISS Recept:</label>
+                <input type="number" step="0.1" id="m_iss_recept">
+            </div>   
+        </div>
+
+        <button onclick="subirManual()" style="margin-top: 30px;">Guardar Registro</button>
+        <div id="estadoManual"></div>
+
+
+    </div>    
+        
+        
+    </div>
+
+    <script>
+        const SERVER_URL = 'http://localhost:3000/guardar-clima';
+
+        function descargarPlantilla() {
+            const encabezados = ["date", "time", "temp_out", "hi_temp", "low_temp", "out_hum", "dew_pt", "wind_speed", "wind_dir", "wind_run", "hi_speed", "hi_dir", "wind_chill", "heat_index", "thw_index", "thsw_index", "bar", "rain", "rain_rate", "solar_rad", "solar_energy", "hi_solar_rad", "uv_index", "uv_dose", "hi_uv", "in_temp", "in_hum", "in_dew", "in_heat", "in_emc", "in_air_density","et","wind_samp","iss_recept"];
+        
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.aoa_to_sheet([encabezados]);
+            XLSX.utils.book_append_sheet(wb, ws, "Plantilla" );
+            XLSX.writeFile(wb, "Plantilla_Estacion.xlsx");
+        }
+
+        async function subirManual() {
+            const estado = document.getElementById('estadoManual');
+
+            const rawTime = document.getElementById('m_time').value
+            const data = {
+                date: document.getElementById('m_date').value,
+                time: formatearHoraManual(rawTime),
+                temp_out: document.getElementById('m_temp_out').value || null, 
+                hi_temp: document.getElementById('m_hi_temp').value || null,
+                low_temp: document.getElementById('m_low_temp').value || null, 
+                out_hum:  document.getElementById('m_out_hum').value || null,
+                dew_pt: document.getElementById('m_dew_pt').value || null,
+                wind_speed: document.getElementById('m_wind_speed').value || null,
+                        
+                wind_dir: document.getElementById('m_wind_dir').value || null,
+                wind_run: document.getElementById('m_wind_run').value || null,
+                hi_speed: document.getElementById('m_hi_speed').value || null,
+                hi_dir: document.getElementById('m_hi_dir').value || null,
+                wind_chill: document.getElementById('m_wind_chill').value || null, 
+                heat_index: document.getElementById('m_heat_index').value || null,
+                thw_index: document.getElementById('m_thw_index').value || null,
+                thsw_index: document.getElementById('m_thsw_index').value || null, 
+                bar: document.getElementById('m_bar').value || null,
+                rain: document.getElementById('m_rain').value || null,
+                rain_rate: document.getElementById('m_rain_rate').value || null,
+                solar_rad: document.getElementById('m_solar_rad').value || null,
+                solar_energy: document.getElementById('m_solar_energy').value || null,
+                hi_solar_rad: document.getElementById('m_hi_solar_rad').value || null,
+                uv_index: document.getElementById('m_uv_index').value || null,
+                uv_dose: document.getElementById('m_uv_dose').value || null,
+                hi_uv: document.getElementById('m_hi_uv').value || null,
+                in_temp: document.getElementById('m_in_temp').value || null,
+                in_hum: document.getElementById('m_in_hum').value || null,
+                in_dew: document.getElementById('m_in_dew').value || null,
+                in_heat: document.getElementById('m_in_heat').value || null,
+                in_emc: document.getElementById('m_in_emc').value || null,
+                in_air_density: document.getElementById('m_in_air_density').value || null,
+                et: document.getElementById('m_et').value || null,
+                wind_samp: document.getElementById('m_wind_samp').value || null,
+                iss_recept: document.getElementById('m_iss_recept').value || null
+            };
+
+            if (!data.date || !data.time) {
+                estado.innerText = "Fecha y hora son obligatorios";
+                estado. style.color = "red";
+                return;
+            }
+
+            estado.innerText = "Enviando...";
+            estado. style.color = "blue";
+
+            try {
+                const response = await fetch(SERVER_URL, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    estado.innerText = "Guardado correctamente";
+                    estado.style.color = "green";
+                    limpiarFormulario();
+                }else{
+                    const errorTxt = await response.text();
+                    throw new Error(errorTxt); 
+                }
+            } catch (err) {
+                console.error(err);
+                estado.innerText = "Error al guardar";
+                estado.style.color = "red";
+            }
+        }
+
+        function limpiarFormulario() {
+            document.getElementById('m_temp_out').value = '', 
+            document.getElementById('m_hi_temp').value = '',
+            document.getElementById('m_low_temp').value = '', 
+            document.getElementById('m_out_hum').value = '',
+            document.getElementById('m_dew_pt').value = '',
+            document.getElementById('m_wind_speed').value = '',
+                        
+            document.getElementById('m_wind_dir').value = '',
+            document.getElementById('m_wind_run').value = '',
+            document.getElementById('m_hi_speed').value = '',
+            document.getElementById('m_hi_dir').value = '',
+            document.getElementById('m_wind_chill').value = '', 
+            document.getElementById('m_heat_index').value = '',
+            document.getElementById('m_thw_index').value = '',
+            document.getElementById('m_thsw_index').value = '', 
+            document.getElementById('m_bar').value = '',
+            document.getElementById('m_rain').value = '',
+            document.getElementById('m_rain_rate').value = '',
+            document.getElementById('m_solar_rad').value = '',
+            document.getElementById('m_solar_energy').value = '',
+            document.getElementById('m_hi_solar_rad').value = '',
+            document.getElementById('m_uv_index').value = '',
+            document.getElementById('m_uv_dose').value = '',
+            document.getElementById('m_hi_uv').value = '',
+            document.getElementById('m_in_temp').value = '',
+            document.getElementById('m_in_hum').value = '',
+            document.getElementById('m_in_dew').value = '',
+            document.getElementById('m_in_heat').value = '',
+            document.getElementById('m_in_emc').value = '',
+            document.getElementById('m_in_air_density').value = '',
+            document.getElementById('m_et').value = '',
+            document.getElementById('m_wind_samp').value = '',
+            document.getElementById('m_iss_recept').value = ''
+        }
+
+        const getNum = (val) => {
+            if (val === undefined || val == null || val === '') return null;
+            const limpio = parseFloat(val);
+            return isNaN(limpio) ? null : limpio;
+        };
+
+        const getStr = (val) => {
+            if (val === undefined || val == null || val === '') return null;
+            return String(val).trim();    
+            
+        };
+
+        function procesarArchivo() {
+            const input = document.getElementById('archivoInput');
+            if (!input.files[0]) return alert("Selecciona un archivo primero");
+
+            const archivo = input.files[0];
+            const reader = new FileReader();
+            reader.readAsArrayBuffer(archivo);
+
+            reader.onload = function(e) {
+                 const data = new Uint8Array(e.target.result);
+                 const workbook = XLSX.read(data, {type: 'array', cellDates: false});
+                 const hoja = workbook.Sheets[workbook.SheetNames[0]];
+                 const datosCrudos = XLSX.utils.sheet_to_json(hoja, {raw: false, defval: ""});
+
+                 console.log(`Leidos ${datosCrudos.length} registros del archivo ${archivo.name}`);
+
+                 const datosLimpios = datosCrudos.map(fila => transformarFila(fila)).filter(d => d !== null);
+                
+                if (datosLimpios.length > 0) {
+                    subirMasivo(datosLimpios);
+                } else {
+                    alert("No se encontraron datos válidos")
+                }
+            };
+        }
+
+        function formatearHoraManual(hora24){
+            if (!hora24) return null;
+
+            const[horaStr, minutos] = hora24.split(':');
+            let horas = parseInt(horaStr, 10);
+
+            const sufijo = horas >= 12 ? 'p. m.' : 'a. m.';
+
+            horas = horas % 12;
+            horas = horas ? horas : 12;
+
+            const horasFinal = horas.toString().padStart(2, '0');
+
+            return`${horasFinal}:${minutos} ${sufijo}`;
+        }
+
+        function transformarFila(fila) {
+            const f = {};
+            Object.keys(fila).forEach(k => {
+                const keyLimpia = k.toLowerCase().trim().replace(/['"]+/g, '').replace(/\./g, '').replace(/\s+/g, '_');
+                f[keyLimpia] = fila[k];
+            });
+
+            console.log("Fila procesada:", f);
+
+            if (!f.date || !f.time) return null; 
+            
+            let fechaStr = String(f.date).trim();
+            if (fechaStr.includes('/')) {
+                const partes = fechaStr.split('/');
+                if (partes.length === 3) {
+                    let mes  = partes[0];
+                    let dia  = partes[1];
+                    let año  = partes[2];
+
+                    mes = mes.padStart(2, '0');
+                    dia = dia.padStart(2, '0');
+
+                    if (año.length === 2) año = "20" + año;
+                    fechaStr = `${año}-${mes}-${dia}`;           
+                }
+            }    
+
+            let horaStr = String(f.time).trim();
+            const esPM = horaStr.toLocaleLowerCase().includes('p');
+            const esAM = horaStr.toLocaleLowerCase().includes('a');
+
+            const match = horaStr.match(/(\d+):(\d+)/);
+
+            if (match) {
+                let h = parseInt(match[1]);
+                let m = match[2];    
+
+                if (esPM && h < 12) h += 12;
+                
+
+                const sufijo = h >= 12 ? 'p. m.' : 'a. m.';
+
+                let h12 = h % 12;
+                if (h12 === 0) h12 = 12;
+
+                const hStr = String(h12).padStart(2, '0');
+
+                horaStr = `${hStr}:${m} ${sufijo}`;
+            }
+
+            
+                
+            
+
+            return {
+                date: fechaStr,
+                time: horaStr,
+                temp_out: getNum(f.temp_out), 
+                hi_temp: getNum(f.hi_temp),
+                low_temp: getNum(f.low_temp), 
+                out_hum:  getNum(f.out_hum),
+                dew_pt: getNum(f.dew_pt),
+                wind_speed: getNum(f.wind_speed),
+                        
+                wind_dir: getStr(f.wind_dir),
+                wind_run: getNum(f.wind_run),
+                hi_speed: getNum(f.hi_speed),
+                hi_dir: getStr(f.hi_dir),
+                wind_chill: getNum(f.wind_chill), 
+                heat_index: getNum(f.heat_index),
+                thw_index: getNum(f.thw_index),
+                thsw_index: getNum(f.thsw_index), 
+                bar: getNum(f.bar),
+                rain: getNum(f.rain),
+                rain_rate: getNum(f.rain_rate),
+                solar_rad: getNum(f.solar_rad),
+                solar_energy: getNum(f.solar_energy),
+                hi_solar_rad: getNum(f.hi_solar_rad),
+                uv_index: getNum(f.uv_index),
+                uv_dose: getNum(f.uv_dose),
+                hi_uv: getNum(f.hi_uv),
+                in_temp: getNum(f.in_temp),
+                in_hum: getNum(f.in_hum),
+                in_dew: getNum(f.in_dew),
+                in_heat: getNum(f.in_heat),
+                in_emc: getNum(f.in_emc),
+                in_air_density: getNum(f.in_air_density),
+                et: getNum(f.et),
+                wind_samp: getNum(f.wind_samp),
+                iss_recept: getNum(f.iss_recept)
+                };            
+        }
+
+        async function subirMasivo(datos) {
+            const estado = document.getElementById('estado');
+            const log = document.getElementById('log');
+            estado.innerText = `Procesando ${datos.length} registros...`;
+
+            const LOTE = 10;
+            let errores = 0;
+            let subidos = 0;
+
+            for (let i = 0; i < datos.length; i += LOTE) {
+                const chunk = datos.slice(i, i + LOTE);
+
+                const promesas = chunk.map(d =>
+                    fetch(SERVER_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(d)
+                    }).then(async response =>{
+                        if (!response.ok) {
+                            const errorText = await response.text();
+                            throw new Error(`Server error: ${response.status} - ${errorText}`);
+                        }
+                        return response.json();
+                    }).catch(err => {
+                        console.error("Error subiendo fila:", d, err);
+                        errores++;
+                    })
+                );
+
+                await Promise.all(promesas);
+                subidos += chunk.length - errores;
+                const progreso = Math.min(i + LOTE, datos.length);
+                estado.innerText = `Subiendo: ${progreso} / ${datos.length}`;
+            }
+
+            if (errores > 0) {
+                estado.innerText = `Finalizado con ${errores} errores de conexión.`;
+                estado.style.color = "orange";
+            } else {
+                estado.innerText = "Carga Completa";
+                estado.style.color = "#155724";
+            }
+        }
+
+        function mostrarBotonEliminar() {
+            const input = document.getElementById('archivoInput');
+            const btn = document.getElementById('botonEliminarArchivo');
+            const estado = document.getElementById('estado');
+
+            if (input.files.length > 0) {
+                btn.style.display = 'flex';
+            }else{
+                btn.style.display = 'none';
+            }
+        }
+
+        function eliminarArchivo() {
+            const input = document.getElementById('archivoInput');
+            const btn = document.getElementById('botonEliminarArchivo');
+            const estado = document.getElementById('estado');
+
+            input.value = '';
+            btn.style.display = 'none';
+
+            estado.innerText = "Esperando...";
+            estado.style.backgroundColor = "transparent";
+            estado.style.color = "#333"
+        }
+
+    </script>
+</body>
